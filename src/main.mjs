@@ -27,26 +27,30 @@ let sleep = n => {
   msleep(n*1000);
 }
 
+let printNow = () => {
+  return moment().format("YYYY-MM-DD HH:mm:ss")
+}
+
 let sendSaveRequest = (startTime, data) => {
-  console.log('查询号源中...')
+  console.log(printNow() + ' 查询号源中... ')
   request.check(data)
   .then(state => {
     if (state == "OK") {
-      console.log('已有号源,抢号中...')
+      console.log(printNow() + ' 已有号源,抢号中... ')
       request.save(data)
       .then(orderNo => {
-        console.log('恭喜！抢号成功！订单号：' + orderNo + '。请在微信公众号京医通-个人中心-我的账户-挂号订单中继续支付。')
+        console.log(printNow() + ' 恭喜！抢号成功！订单号：' + orderNo + '. 请在微信公众号京医通-个人中心-我的账户-挂号订单中继续支付! ')
       }).catch(error => {
-        console.log('没挂上!', error)
+        console.log(printNow() + ' 没挂上! ', error)
         sleep(1)
         sendSaveRequest(startTime, data)
       })
     }
   }).catch(error => {
-    console.log('当前无号源!', error)
+    console.log(printNow() + ' 当前无号源! ', error)
     let now = moment()
     if (now.unix() - startTime.unix() > 30 ) {
-      console.log('已重试多次,抢号失败！结束抢号...')
+      console.log(printNow() + ' 已重试多次,抢号失败！结束抢号... ')
     }else{
       sleep(1)
       sendSaveRequest(startTime, data)
