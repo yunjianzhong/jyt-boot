@@ -112,5 +112,6 @@ export default {
   .then(response =>  response.data.data.orderNo ),
 
   check: data => ajax.post(config.urls.check, data)
+  .then(response =>  response.data.data.state)
     
 }

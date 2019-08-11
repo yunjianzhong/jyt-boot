@@ -17,9 +17,11 @@
   },
   "homepage": "https://gitlab.com/liyue-private/jyt-boot#readme",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "eslint": "^5.14.1",
     "inquirer": "^6.2.2",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "sleep": "^6.1.0"
   }
 }

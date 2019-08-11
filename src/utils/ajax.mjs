@@ -18,7 +18,7 @@ import config from '../../config/config'
 
 var ajax = axios.create({
   baseURL: 'https://wechat.benmu-health.com/mobile/wx/',
-  timeout: 1000,
+  timeout: 5000,
   headers: config.headers
 });
 

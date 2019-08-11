@@ -17,24 +17,69 @@ import config from '../config/config'
 import inquirer from 'inquirer'
 import request from './requests'
 import dt from './utils/date'
+import moment from 'moment'
+
+let msleep = n => {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
+}
+
+let sleep = n => {
+  msleep(n*1000);
+}
+
+let sendSaveRequest = (startTime, data) => {
+  console.log('查询号源中...')
+  request.check(data)
+  .then(state => {
+    if (state == "OK") {
+      console.log('已有号源,抢号中...')
+      request.save(data)
+      .then(orderNo => {
+        console.log('恭喜！抢号成功！订单号：' + orderNo + '。请在微信公众号京医通-个人中心-我的账户-挂号订单中继续支付。')
+      }).catch(error => {
+        console.log('没挂上!', error)
+        sleep(1)
+        sendSaveRequest(startTime, data)
+      })
+    }
+  }).catch(error => {
+    console.log('当前无号源!', error)
+    let now = moment()
+    if (now.unix() - startTime.unix() > 30 ) {
+      console.log('已重试多次,抢号失败！结束抢号...')
+    }else{
+      sleep(1)
+      sendSaveRequest(startTime, data)
+    }
+  })
+}
 
 let save = data => {
   inquirer.prompt([{
-    type: 'confirm',
-    name: 'confirm',
-    message: '确定要挂号吗？',
-    default: true
+    type: 'input',
+    name: 'startTime',
+    message: '请输入放号时间,仅支持24小时内时间,格式为"YYYY-MM-DD HH:mm:ss"]\n:'   
   }]).then(ans => {
-    if(ans.confirm) {
-      request.save(data)
-        .then(orderNo => {
-            console.log('恭喜！抢号成功！订单号：' + orderNo + '。请在微信公众号京医通-个人中心-我的账户-挂号订单中继续支付。')
-        }).catch(error => {
-          console.log('没挂上!', error)
-          save(data)
-        })
-    }}
-  )
+    let startTime = moment(ans.startTime, "YYYY-MM-DD HH:mm:ss")
+    let now = moment()
+
+    console.log("放号时间: " + startTime.format("YYYY-MM-DD HH:mm:ss"))    
+    console.log("当前时间: " + now.format("YYYY-MM-DD HH:mm:ss"))
+
+    let sleepTime = startTime.unix() - now.unix()
+    if (sleepTime > 0 && sleepTime < 60*60*24) {
+      console.log('距离放号时间还有' + sleepTime + '秒,将在放号前5秒开始抢号!')
+      sleep(sleepTime - 5)
+      now = moment()
+      console.log('距离放号时间还有' + (startTime.unix() - now.unix())  + '秒,开始抢号!')
+      
+      sendSaveRequest(startTime, data)
+
+    }else{
+      console.log('放号时间仅支持24小时内,请确认是否输入正确!')
+      save(data)
+    }
+  })
 }
 
 let data = {
