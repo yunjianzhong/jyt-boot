@@ -42,7 +42,6 @@ let sendSaveRequest = (startTime, data) => {
         console.log(printNow() + ' 恭喜！抢号成功！订单号：' + orderNo + '. 请在微信公众号京医通-个人中心-我的账户-挂号订单中继续支付! ')
       }).catch(error => {
         console.log(printNow() + ' 没挂上! ', error)
-        sleep(1)
         sendSaveRequest(startTime, data)
       })
     }
@@ -72,8 +71,8 @@ let save = data => {
 
     let sleepTime = startTime.unix() - now.unix()
     if (sleepTime > 0 && sleepTime < 60*60*24) {
-      console.log('距离放号时间还有' + sleepTime + '秒,将在放号前5秒开始抢号!')
-      sleep(sleepTime - 5)
+      console.log('距离放号时间还有' + sleepTime + '秒,将在放号前10秒开始抢号!')
+      sleep(sleepTime - 10)
       now = moment()
       console.log('距离放号时间还有' + (startTime.unix() - now.unix())  + '秒,开始抢号!')
       
